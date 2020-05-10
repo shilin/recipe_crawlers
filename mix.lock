@@ -1,0 +1,4 @@
+%{
+  "gen_stage": {:hex, :gen_stage, "1.0.0", "51c8ae56ff54f9a2a604ca583798c210ad245f415115453b773b621c49776df5", [:mix], [], "hexpm"},
+  "saxy": {:hex, :saxy, "1.1.0", "7f31951a120f6c14bbbd03c7b9dc20a555247c253fdf0f38e4c7284ee15b9bda", [:mix], [], "hexpm"},
+}
