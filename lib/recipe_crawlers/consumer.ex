@@ -12,7 +12,7 @@ defmodule RecipeCrawlers.Consumer do
   end
 
   def handle_events(events, _from, state) do
-    IO.puts("received #{length(events)} events")
+    # IO.puts("received #{length(events)} events")
     Enum.each(events, &recipe_page/1)
     {:noreply, [], state}
   end
