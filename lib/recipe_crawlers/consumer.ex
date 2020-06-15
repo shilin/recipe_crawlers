@@ -32,19 +32,25 @@ defmodule RecipeCrawlers.Consumer do
             |> List.first()
             |> Floki.children()
             |> Floki.text()
-            |> Jason.decode!()
             |> IO.inspect()
+            |> (fn recipe ->
+                  KafkaEx.produce(%KafkaEx.Protocol.Produce.Request{
+                    topic: "recipes",
+                    partition: 0,
+                    required_acks: 1,
+                    messages: [
+                      %KafkaEx.Protocol.Produce.Message{
+                        value: recipe
+                      }
+                    ]
+                  })
+                end).()
           end
 
         _not_parced ->
           IO.puts("not parsed")
       end
 
-      # {:ok, page} = Floki.parse_document(resp.body)
-      # img =
-      #   page
-      #   |> Floki.find(page, ".g-print-visible > .recipe__print-cover > img")
-      #   |> Floki.attribute("src")
     else
       Logger.error("Cannot download " <> loc)
     end
