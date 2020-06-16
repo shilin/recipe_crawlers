@@ -19,19 +19,38 @@ defmodule RecipeCrawlers.Consumer do
 
   defp recipe_page(%{loc: loc}) do
     resp = HTTPoison.get!(loc)
+
     if resp.status_code == 200 do
-      {:ok, page} = Floki.parse_document(resp.body)
-      # img =
-      #   page
-      #   |> Floki.find(page, ".g-print-visible > .recipe__print-cover > img")
-      #   |> Floki.attribute("src")
-      page
-      |> Floki.find("script[type=\"application/ld+json\"]")
-      |> List.first()
-      |> Floki.children()
-      |> Floki.text()
-      |> Jason.decode!()
-      |> IO.inspect()
+      case Floki.parse_document(resp.body) do
+        {:ok, page} ->
+          description = Floki.find(page, "script[type=\"application/ld+json\"]")
+
+          if Enum.empty?(description) do
+            IO.puts("no description on page")
+          else
+            description
+            |> List.first()
+            |> Floki.children()
+            |> Floki.text()
+            |> IO.inspect()
+            |> (fn recipe ->
+                  KafkaEx.produce(%KafkaEx.Protocol.Produce.Request{
+                    topic: "recipes",
+                    partition: 0,
+                    required_acks: 1,
+                    messages: [
+                      %KafkaEx.Protocol.Produce.Message{
+                        value: recipe
+                      }
+                    ]
+                  })
+                end).()
+          end
+
+        _not_parced ->
+          IO.puts("not parsed")
+      end
+
     else
       Logger.error("Cannot download " <> loc)
     end

@@ -41,9 +41,11 @@ defmodule RecipeCrawlers.SitemapHandler do
 
   def handle_event(:characters, content, state) do
     content = String.trim(content)
+
     case state.current_tag do
       field when content != "" and (field == "loc" or field == "lastmod") ->
         {:ok, State.update_current_item(state, String.to_existing_atom(field), content)}
+
       _ ->
         {:ok, state}
     end
@@ -52,8 +54,9 @@ defmodule RecipeCrawlers.SitemapHandler do
   def handle_event(:end_element, "url", state) do
     state = State.append_item(state)
     buff = state.buff
+
     if length(buff) < state.demand do
-      {:ok, state};
+      {:ok, state}
     else
       client = state.client
       send(client, {:data, Enum.reverse(state.buff)})
@@ -74,8 +77,10 @@ defmodule RecipeCrawlers.SitemapHandler do
     receive do
       {:more, demand} ->
         {:ok, %State{client: client, demand: demand}}
+
       {:stop, reason} ->
         {:stop, {:error, reason}}
+
       smth_else ->
         {:stop, {:unexpected_message, smth_else}}
     end

@@ -21,9 +21,8 @@ defmodule RecipeCrawlers.Producer do
   def handle_info({:DOWN, _ref, :process, pid, :normal}, state) when state == pid,
     do: {:stop, :normal, state}
 
-  def handle_demand(demand, parser)do
+  def handle_demand(demand, parser) do
     IO.puts("Demand #{demand} events")
     {:noreply, [], parser}
   end
 end
-
